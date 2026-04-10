@@ -14,8 +14,10 @@ def main():
 
     hidden_imports = [
         "semgrep",
+        "semgrep.main",
         "semgrep.cli",
-        "semgrep.cli.cmds",
+        "semgrep.console_scripts",
+        "semgrep.console_scripts.entrypoint",
         "semgrep.rule",
         "semgrep.rule_match",
         "semgrep.engine",

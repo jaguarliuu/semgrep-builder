@@ -1,18 +1,17 @@
 """
-Custom entry point that calls semgrep_main.main() directly,
-avoiding the 'python -m semgrep' deprecation warning.
+Custom entry point that calls semgrep's pysemgrep path directly.
 """
 import sys
 import os
 
-# Suppress the deprecation warning about `python -m semgrep`
-# Semgrep checks this in its __main__.py
-os.environ["SEMGREP_SUPPRESS_SARIF_PROJECT_NAME_CHANGE_WARNING"] = "1"
-os.environ["SEMGREP_SKIP_ADHOC_RULES"] = "0"
+# Fix Windows stdout encoding issues
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
 
 try:
-    from semgrep import semgrep_main
-    sys.exit(semgrep_main.main())
+    from semgrep.console_scripts.entrypoint import exec_pysemgrep
+    exec_pysemgrep()
 except SystemExit as e:
     sys.exit(e.code)
 except Exception as e:
