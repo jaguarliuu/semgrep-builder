@@ -37,7 +37,7 @@ jobs:
           result = subprocess.run([
               sys.executable, '-m', 'PyInstaller',
               '--onefile',
-              '-c',
+              '--console',
               '--name', 'semgrep',
               '--distpath', 'dist',
               '--workpath', 'build',
@@ -61,16 +61,19 @@ jobs:
               '--add-hidden-import', 'semgrep.version',
               '--collect-all', 'semgrep',
               main_py
-          ], capture_output=False)
-          sys.exit(result)
+          ])
+          sys.exit(result.returncode)
           "
 
       - name: Show output
         run: |
-          dir dist\semgrep.exe 2>nul && dir dist\semgrep.exe
-          if not exist dist\semgrep.exe (
-            echo === Checking build dir ===
+          if exist dist\semgrep.exe (
+            echo SUCCESS: dist\semgrep.exe
+            for %%A in (dist\semgrep.exe) do echo Size: %%~zA bytes
+          ) else (
+            echo File not found, checking build dir...
             dir build\ 2>nul
+            dir dist\ 2>nul
           )
 
       - name: Upload artifact
@@ -80,8 +83,3 @@ jobs:
           path: |
             dist/semgrep.exe
           retention-days: 5
-
-      - name: Display artifact info
-        run: |
-          echo Build complete!
-          echo Artifact: https://github.com/jaguarliuu/semgrep-builder/actions/runs/%GITHUB_RUN_ID%
