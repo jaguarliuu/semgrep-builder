@@ -1,6 +1,5 @@
 """
 Build script to package Semgrep as a single Windows .exe using PyInstaller.
-Run: python build.py
 """
 import semgrep.__main__
 import os
@@ -13,7 +12,6 @@ def main():
     main_py = os.path.join(entry, "__main__.py")
     print(f"Entry point: {main_py}")
 
-    # All semgrep modules to include
     hidden_imports = [
         "semgrep",
         "semgrep.cli",
@@ -35,27 +33,16 @@ def main():
         "semgrep.version",
     ]
 
-    cmd = [
-        sys.executable, "-m", "PyInstaller",
-        "--onefile",
-        "--console",
-        "--name", "semgrep",
-        "--distpath", "dist",
-        "--workpath", "build",
-        "--add-hidden-import", "semgrep",
-    ]
+    # Build command - use pyinstaller binary directly
+    cmd = ["pyinstaller", "--onefile", "--console", "--name", "semgrep",
+           "--distpath", "dist", "--workpath", "build"]
 
-    # Add individual hidden imports
     for mod in hidden_imports:
-        cmd += ["--add-hidden-import", mod]
+        cmd += ["--hidden-import", mod]
 
-    # Collect all data from semgrep
-    cmd += ["--collect-all", "semgrep"]
+    cmd += ["--collect-all", "semgrep", main_py]
 
-    # Add the entry point
-    cmd.append(main_py)
-
-    print(f"Running: {' '.join(cmd[:10])} ...")
+    print(f"Running pyinstaller directly (not python -m PyInstaller)...")
     result = subprocess.run(cmd)
     sys.exit(result.returncode)
 
