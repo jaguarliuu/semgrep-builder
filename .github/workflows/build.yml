@@ -21,49 +21,8 @@ jobs:
           pip install --upgrade pip
           pip install pyinstaller semgrep
 
-      - name: Build with PyInstaller
-        run: |
-          python -c "
-          import semgrep.__main__
-          import os
-          import subprocess
-          import sys
-
-          entry = os.path.dirname(semgrep.__main__.__file__)
-          main_py = os.path.join(entry, '__main__.py')
-          print(f'Entry point: {main_py}')
-
-          # Build with PyInstaller using semgrep's __main__.py as entry
-          result = subprocess.run([
-              sys.executable, '-m', 'PyInstaller',
-              '--onefile',
-              '--console',
-              '--name', 'semgrep',
-              '--distpath', 'dist',
-              '--workpath', 'build',
-              '--add-hidden-import', 'semgrep',
-              '--add-hidden-import', 'semgrep.cli',
-              '--add-hidden-import', 'semgrep.cli.cmds',
-              '--add-hidden-import', 'semgrep.rule',
-              '--add-hidden-import', 'semgrep.rule_match',
-              '--add-hidden-import', 'semgrep.engine',
-              '--add-hidden-import', 'semgrep.target_manager',
-              '--add-hidden-import', 'semgrep.constants',
-              '--add-hidden-import', 'semgrep.error',
-              '--add-hidden-import', 'semgrep.git',
-              '--add-hidden-import', 'semgrep.pattern',
-              '--add-hidden-import', 'semgrep.pmatch',
-              '--add-hidden-import', 'semgrep.profiling',
-              '--add-hidden-import', 'semgrep.rule_board',
-              '--add-hidden-import', 'semgrep.semgrep_main',
-              '--add-hidden-import', 'semgrep.skip_list',
-              '--add-hidden-import', 'semgrep.timeout',
-              '--add-hidden-import', 'semgrep.version',
-              '--collect-all', 'semgrep',
-              main_py
-          ])
-          sys.exit(result.returncode)
-          "
+      - name: Run build script
+        run: python build.py
 
       - name: Show output
         run: |
