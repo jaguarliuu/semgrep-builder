@@ -26,14 +26,14 @@ jobs:
 
       - name: Show output
         run: |
-          if exist dist\semgrep.exe (
-            echo SUCCESS: dist\semgrep.exe
-            for %%A in (dist\semgrep.exe) do echo Size: %%~zA bytes
-          ) else (
-            echo File not found, checking build dir...
-            dir build\ 2>nul
-            dir dist\ 2>nul
-          )
+          if (Test-Path dist\semgrep.exe) {
+            echo "SUCCESS: dist\semgrep.exe"
+            Get-Item dist\semgrep.exe | Select-Object Name, Length
+          } else {
+            echo "File not found"
+            if (Test-Path build\) { dir build\ }
+            if (Test-Path dist\) { dir dist\ }
+          }
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
