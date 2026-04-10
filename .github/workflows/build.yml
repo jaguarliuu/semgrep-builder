@@ -21,45 +21,56 @@ jobs:
           pip install --upgrade pip
           pip install pyinstaller semgrep
 
-      - name: Get semgrep package path
-        shell: python
+      - name: Build with PyInstaller
         run: |
+          python -c "
           import semgrep.__main__
           import os
-          print(os.path.dirname(semgrep.__main__.__file__))
+          import subprocess
+          import sys
 
-      - name: Run PyInstaller
-        shell: cmd
-        run: |
-          for /f "delims=" %%i in ('python -c "import semgrep.__main__; import os; print(os.path.dirname(semgrep.__main__.__file__))"') do set ENTRY_DIR=%%i
-          echo Entry dir: %ENTRY_DIR%
-          pyinstaller --onefile --console-only ^
-            --hidden-import semgrep ^
-            --hidden-import semgrep.cli ^
-            --hidden-import semgrep.cli.cmds ^
-            --hidden-import semgrep.rule ^
-            --hidden-import semgrep.rule_match ^
-            --hidden-import semgrep.engine ^
-            --hidden-import semgrep.target_manager ^
-            --hidden-import semgrep.constants ^
-            --hidden-import semgrep.error ^
-            --hidden-import semgrep.git ^
-            --hidden-import semgrep.pattern ^
-            --hidden-import semgrep.pmatch ^
-            --hidden-import semgrep.profiling ^
-            --hidden-import semgrep.rule_board ^
-            --hidden-import semgrep.semgrep_main ^
-            --hidden-import semgrep.skip_list ^
-            --hidden-import semgrep.timeout ^
-            --hidden-import semgrep.version ^
-            --collect-all semgrep ^
-            --name semgrep.exe ^
-            "%ENTRY_DIR%\__main__.py"
+          entry = os.path.dirname(semgrep.__main__.__file__)
+          main_py = os.path.join(entry, '__main__.py')
+          print(f'Entry point: {main_py}')
+
+          # Build with PyInstaller using semgrep's __main__.py as entry
+          result = subprocess.run([
+              sys.executable, '-m', 'PyInstaller',
+              '--onefile',
+              '-c',
+              '--name', 'semgrep',
+              '--distpath', 'dist',
+              '--workpath', 'build',
+              '--add-hidden-import', 'semgrep',
+              '--add-hidden-import', 'semgrep.cli',
+              '--add-hidden-import', 'semgrep.cli.cmds',
+              '--add-hidden-import', 'semgrep.rule',
+              '--add-hidden-import', 'semgrep.rule_match',
+              '--add-hidden-import', 'semgrep.engine',
+              '--add-hidden-import', 'semgrep.target_manager',
+              '--add-hidden-import', 'semgrep.constants',
+              '--add-hidden-import', 'semgrep.error',
+              '--add-hidden-import', 'semgrep.git',
+              '--add-hidden-import', 'semgrep.pattern',
+              '--add-hidden-import', 'semgrep.pmatch',
+              '--add-hidden-import', 'semgrep.profiling',
+              '--add-hidden-import', 'semgrep.rule_board',
+              '--add-hidden-import', 'semgrep.semgrep_main',
+              '--add-hidden-import', 'semgrep.skip_list',
+              '--add-hidden-import', 'semgrep.timeout',
+              '--add-hidden-import', 'semgrep.version',
+              '--collect-all', 'semgrep',
+              main_py
+          ], capture_output=False)
+          sys.exit(result)
+          "
 
       - name: Show output
         run: |
-          for %%f in (dist\semgrep.exe build\semgrep.exe) do (
-            if exist "%%f" echo %%~nxf: %%~zf bytes
+          dir dist\semgrep.exe 2>nul && dir dist\semgrep.exe
+          if not exist dist\semgrep.exe (
+            echo === Checking build dir ===
+            dir build\ 2>nul
           )
 
       - name: Upload artifact
