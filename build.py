@@ -40,9 +40,9 @@ def main():
     for mod in hidden_imports:
         cmd += ["--hidden-import", mod]
 
-    cmd += ["--collect-all", "semgrep", main_py]
+    cmd += ["--collect-all", "semgrep", "entry.py"]
 
-    print(f"Running pyinstaller directly (not python -m PyInstaller)...")
+    print(f"Running pyinstaller...")
     result = subprocess.run(cmd)
     sys.exit(result.returncode)
 
