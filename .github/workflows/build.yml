@@ -21,38 +21,18 @@ jobs:
           pip install --upgrade pip
           pip install pyinstaller semgrep
 
-      - name: Find semgrep entry point
-        id: find-entry
+      - name: Get semgrep package path
         shell: python
         run: |
-          import semgrep
-          import os
-          # semgrep's __main__.py is the entry point
-          # Try to find it
           import semgrep.__main__
-          main_path = os.path.dirname(semgrep.__main__.__file__)
-          entry = os.path.join(main_path, '__main__.py')
-          print(f"entry={entry}")
-
-      - name: Build with PyInstaller
-        shell: python
-        run: |
-          import subprocess
-          import sys
           import os
-          import semgrep.__main__
-          main_dir = os.path.dirname(semgrep.__main__.__file__)
-          entry = os.path.join(main_dir, '__main__.py')
-          print(f"Building from {entry}")
-
-      - name: PyInstaller single-file build
-        run: |
-          python -c "import semgrep.__main__; import os; print(os.path.dirname(semgrep.__main__.__file__))"
-          set ENTRY_DIR=python -c "import semgrep.__main__; import os; print(os.path.dirname(semgrep.__main__.__file__))"
+          print(os.path.dirname(semgrep.__main__.__file__))
 
       - name: Run PyInstaller
+        shell: cmd
         run: |
           for /f "delims=" %%i in ('python -c "import semgrep.__main__; import os; print(os.path.dirname(semgrep.__main__.__file__))"') do set ENTRY_DIR=%%i
+          echo Entry dir: %ENTRY_DIR%
           pyinstaller --onefile --console-only ^
             --hidden-import semgrep ^
             --hidden-import semgrep.cli ^
@@ -78,7 +58,6 @@ jobs:
 
       - name: Show output
         run: |
-          dir build\*.exe 2>nul || dir dist\*.exe 2>nul
           for %%f in (dist\semgrep.exe build\semgrep.exe) do (
             if exist "%%f" echo %%~nxf: %%~zf bytes
           )
@@ -93,5 +72,5 @@ jobs:
 
       - name: Display artifact info
         run: |
-          echo "Artifact will be available at:"
-          echo "https://github.com/jaguarliuu/semgrep-builder/actions/runs/${{ github.run_id }}"
+          echo Build complete!
+          echo Artifact: https://github.com/jaguarliuu/semgrep-builder/actions/runs/%GITHUB_RUN_ID%
